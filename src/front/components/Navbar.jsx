@@ -1,19 +1,48 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-export const Navbar = () => {
+const Navbar = () => {
+    const navigate = useNavigate();
+    const token = sessionStorage.getItem("token");
 
-	return (
-		<nav className="navbar navbar-light bg-light">
-			<div className="container">
-				<Link to="/">
-					<span className="navbar-brand mb-0 h1">React Boilerplate</span>
-				</Link>
-				<div className="ml-auto">
-					<Link to="/demo">
-						<button className="btn btn-primary">Check the Context in action</button>
-					</Link>
-				</div>
-			</div>
-		</nav>
-	);
+    const handleLogout = () => {
+        sessionStorage.removeItem("token");
+        navigate("/login");
+    };
+
+    return (
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <div className="container">
+                <Link className="navbar-brand" to="/">
+                    Mi App
+                </Link>
+                
+                <div className="navbar-nav ms-auto">
+                    {token ? (
+                        <>
+                            <Link className="nav-link" to="/private">
+                                Privado
+                            </Link>
+                            <button 
+                                className="btn btn-outline-danger btn-sm ms-2"
+                                onClick={handleLogout}
+                            >
+                                Cerrar Sesión
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link className="nav-link" to="/login">
+                                Iniciar Sesión
+                            </Link>
+                            <Link className="nav-link" to="/signup">
+                                Registrarse
+                            </Link>
+                        </>
+                    )}
+                </div>
+            </div>
+        </nav>
+    );
 };
+
+export default Navbar;
