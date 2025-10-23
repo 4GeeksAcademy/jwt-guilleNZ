@@ -6,6 +6,7 @@ const Navbar = () => {
 
     const handleLogout = () => {
         sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         navigate("/login");
     };
 
@@ -13,14 +14,14 @@ const Navbar = () => {
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container">
                 <Link className="navbar-brand" to="/">
-                    Mi App
+                    🔐 JWT Auth
                 </Link>
                 
                 <div className="navbar-nav ms-auto">
                     {token ? (
                         <>
                             <Link className="nav-link" to="/private">
-                                Privado
+                                Área Privada
                             </Link>
                             <button 
                                 className="btn btn-outline-danger btn-sm ms-2"

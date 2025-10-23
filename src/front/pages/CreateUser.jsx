@@ -15,17 +15,15 @@ const CreateUser = () => {
         try {
             const result = await newUser({ email, password });
             
-            if (result && result.msg) {
-                alert(result.msg);
-            } else if (result && result.email) {
-                alert("Usuario registrado exitosamente");
+            if (result.success) {
+                alert("✅ Usuario registrado exitosamente");
                 navigate("/login");
             } else {
-                alert("Error en el registro");
+                alert(`❌ ${result.error}`);
             }
         } catch (error) {
             console.error("Error en registro:", error);
-            alert("Error al registrar usuario");
+            alert("❌ Error al registrar usuario");
         } finally {
             setLoading(false);
         }
@@ -35,9 +33,9 @@ const CreateUser = () => {
         <div className="container mt-5">
             <div className="row justify-content-center">
                 <div className="col-md-6">
-                    <div className="card">
+                    <div className="card shadow">
                         <div className="card-body">
-                            <h2 className="card-title text-center mb-4">Registro</h2>
+                            <h2 className="card-title text-center mb-4">📝 Registro</h2>
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
                                     <label htmlFor="email" className="form-label">
@@ -50,6 +48,7 @@ const CreateUser = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
+                                        placeholder="tu@email.com"
                                     />
                                 </div>
                                 <div className="mb-3">
@@ -63,18 +62,19 @@ const CreateUser = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
+                                        placeholder="••••••••"
                                     />
                                 </div>
                                 <button 
                                     type="submit" 
-                                    className="btn btn-primary w-100"
+                                    className="btn btn-primary w-100 py-2"
                                     disabled={loading}
                                 >
-                                    {loading ? "Registrando..." : "Registrarse"}
+                                    {loading ? "⏳ Registrando..." : "🚀 Registrarse"}
                                 </button>
                             </form>
                             <div className="text-center mt-3">
-                                <p>
+                                <p className="mb-0">
                                     ¿Ya tienes cuenta?{" "}
                                     <a href="/login" className="text-decoration-none">
                                         Inicia sesión aquí

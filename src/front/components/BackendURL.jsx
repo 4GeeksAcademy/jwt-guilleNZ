@@ -1,23 +1,76 @@
-import React, { Component } from "react";
-import envFile from "../../../docs/assets/env-file.png"
+// BackendURL.jsx - Versión de diagnóstico completo
+import { useEffect, useState } from "react";
 
-const Dark = ({children}) => <span className="bg-dark text-white px-1 rounded">{children}</span>;
-export const BackendURL = () => (
-	<div className="mt-5 pt-5 w-50 mx-auto">
-		<h2>Missing BACKEND_URL env variable</h2>
-		<p>Here's a video tutorial on <a target="_blank" href="https://www.awesomescreenshot.com/video/16498567?key=72dbf905fe4fa6d3224783d02a8b1b9c">how to update your backend URL environment variable.</a></p>
-		<p>There's a file called <Dark>.env</Dark> that contains the environmental variables for your project.</p>
-		<p>There's one variable called <Dark>BACKEND_URL</Dark> that needs to be manually set by yourself.</p>
-		<ol>
-			<li>Make sure you backend is running on port 3001.</li>
-			<li>Open your API and copy the API host.</li>
-			<li>Open the .env file (do not open the .env.example)</li>
-			<li>Add a new variable VITE_BACKEND_URL=<Dark>your api host</Dark></li>
-			<li>Replace <Dark>your api host</Dark> with the public API URL of your flask backend sever running at port 3001</li>
-		</ol>
-		<div className="w-100">
-		<img src={envFile} className="w-100"/>
-		</div>
-		<p>Note: If you are publishing your website to Heroku, Render.com or any other hosting you probably need to follow other steps.</p>
-	</div>
-);
+const BackendURL = () => {
+    const [backendInfo, setBackendInfo] = useState({
+        status: "checking",
+        url: import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api",
+        responseTime: null
+    });
+
+    useEffect(() => {
+        const checkBackendConnection = async () => {
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(backendInfo.url.replace('/api', '/health'));
+                const endTime = Date.now();
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setBackendInfo(prev => ({
+                        ...prev,
+                        status: "connected",
+                        responseTime: endTime - startTime,
+                        message: data.message || "Backend funcionando"
+                    }));
+                } else {
+                    setBackendInfo(prev => ({
+                        ...prev,
+                        status: "error",
+                        responseTime: endTime - startTime,
+                        message: "Error en la respuesta del backend"
+                    }));
+                }
+            } catch (error) {
+                const endTime = Date.now();
+                setBackendInfo(prev => ({
+                    ...prev,
+                    status: "error",
+                    responseTime: endTime - startTime,
+                    message: "No se pudo conectar al backend"
+                }));
+            }
+        };
+
+        checkBackendConnection();
+    }, []);
+
+    return (
+        <div className="alert alert-info mt-3">
+            <h6>🔧 Información de Conexión</h6>
+            <div className="row">
+                <div className="col-md-6">
+                    <strong>Backend:</strong> {backendInfo.url}
+                </div>
+                <div className="col-md-3">
+                    <strong>Estado:</strong> 
+                    <span className={backendInfo.status === "connected" ? "text-success" : "text-danger"}>
+                        {backendInfo.status === "connected" ? " ✅ Conectado" : " ❌ Error"}
+                    </span>
+                </div>
+                <div className="col-md-3">
+                    <strong>Token:</strong> 
+                    {sessionStorage.getItem("token") ? " ✅ Activo" : " ❌ Inactivo"}
+                </div>
+            </div>
+            {backendInfo.responseTime && (
+                <small className="text-muted">
+                    Tiempo de respuesta: {backendInfo.responseTime}ms
+                </small>
+            )}
+        </div>
+    );
+};
+
+export default BackendURL;

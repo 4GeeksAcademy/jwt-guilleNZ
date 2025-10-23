@@ -11,12 +11,12 @@ def create_app():
     
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///project.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY', 'fallback-secret-key')
+    app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY', 'guille123')
     
     
     db.init_app(app)
     jwt = JWTManager(app)
-    CORS(app, origins=["*"])  
+    CORS(app)
     
     
     app.register_blueprint(api, url_prefix='/api')
@@ -25,11 +25,6 @@ def create_app():
     @app.route('/')
     def hello():
         return jsonify({"message": "🚀 JWT Auth API is running!"})
-    
-    
-    @app.route('/health')
-    def health():
-        return jsonify({"status": "healthy", "service": "jwt-auth"})
     
     
     with app.app_context():

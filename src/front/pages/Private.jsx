@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { protectedRoute } from "../API/API";
+import { protectedRoute, logoutUser } from "../API/API";
 
 const Private = () => {
-    const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [userData, setUserData] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -14,6 +14,10 @@ const Private = () => {
             if (!hasAccess) {
                 navigate("/login");
             } else {
+                const userStr = sessionStorage.getItem("user");
+                if (userStr) {
+                    setUserData(JSON.parse(userStr));
+                }
                 setLoading(false);
             }
         };
@@ -22,7 +26,7 @@ const Private = () => {
     }, [navigate]);
 
     const handleLogout = () => {
-        sessionStorage.removeItem("token");
+        logoutUser();
         navigate("/login");
     };
 
@@ -32,7 +36,7 @@ const Private = () => {
                 <div className="row justify-content-center">
                     <div className="col-md-6">
                         <div className="text-center">
-                            <div className="spinner-border" role="status">
+                            <div className="spinner-border text-primary" role="status">
                                 <span className="visually-hidden">Cargando...</span>
                             </div>
                             <p className="mt-2">Verificando autenticación...</p>
@@ -47,59 +51,57 @@ const Private = () => {
         <div className="container mt-5">
             <div className="row justify-content-center">
                 <div className="col-md-8">
-                    <div className="card">
-                        <div className="card-header d-flex justify-content-between align-items-center">
-                            <h3 className="mb-0">Página Privada</h3>
+                    <div className="card shadow">
+                        <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h3 className="mb-0">🏠 Área Privada</h3>
                             <button 
-                                className="btn btn-outline-danger btn-sm"
+                                className="btn btn-light btn-sm"
                                 onClick={handleLogout}
                             >
-                                Cerrar Sesión
+                                🚪 Cerrar Sesión
                             </button>
                         </div>
                         <div className="card-body">
                             <div className="alert alert-success">
-                                <h4>¡Bienvenido a la zona privada!</h4>
+                                <h4>¡Bienvenido a la zona privada! 🎉</h4>
                                 <p className="mb-0">
                                     Has accedido exitosamente a contenido protegido.
                                     Esta página solo es visible para usuarios autenticados.
                                 </p>
                             </div>
                             
-                            <div className="mt-4">
-                                <h5>Información de la sesión:</h5>
-                                <ul className="list-group">
-                                    <li className="list-group-item">
-                                        <strong>Token almacenado:</strong>{" "}
-                                        {sessionStorage.getItem("token") ? "Sí" : "No"}
-                                    </li>
-                                    <li className="list-group-item">
-                                        <strong>Estado:</strong> Autenticado
-                                    </li>
-                                </ul>
-                            </div>
+                            {userData && (
+                                <div className="mt-4">
+                                    <h5>👤 Información del Usuario:</h5>
+                                    <div className="card">
+                                        <div className="card-body">
+                                            <p><strong>ID:</strong> {userData.id}</p>
+                                            <p><strong>Email:</strong> {userData.email}</p>
+                                            <p><strong>Estado:</strong> <span className="badge bg-success">Activo</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="mt-4">
-                                <h5>Funcionalidades disponibles:</h5>
+                                <h5>✨ Funcionalidades Disponibles:</h5>
                                 <div className="row mt-3">
-                                    <div className="col-md-6">
-                                        <div className="card">
-                                            <div className="card-body">
-                                                <h6 className="card-title">Contenido Exclusivo</h6>
+                                    <div className="col-md-6 mb-3">
+                                        <div className="card h-100">
+                                            <div className="card-body text-center">
+                                                <h6 className="card-title">📊 Dashboard</h6>
                                                 <p className="card-text">
-                                                    Acceso a información y recursos disponibles 
-                                                    solo para usuarios registrados.
+                                                    Acceso completo al panel de control y estadísticas.
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="col-md-6">
-                                        <div className="card">
-                                            <div className="card-body">
-                                                <h6 className="card-title">Panel Personal</h6>
+                                    <div className="col-md-6 mb-3">
+                                        <div className="card h-100">
+                                            <div className="card-body text-center">
+                                                <h6 className="card-title">⚙️ Configuración</h6>
                                                 <p className="card-text">
-                                                    Gestiona tu perfil y configuración personal 
-                                                    en esta área segura.
+                                                    Gestiona tu perfil y preferencias de usuario.
                                                 </p>
                                             </div>
                                         </div>

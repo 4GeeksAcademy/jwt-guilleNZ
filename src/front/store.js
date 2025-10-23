@@ -1,38 +1,63 @@
-export const initialStore=()=>{
-  return{
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
-}
+import { writable } from 'svelte/store';
 
-export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
-      return {
-        ...store,
-        message: action.payload
-      };
-      
-    case 'add_task':
 
-      const { id,  color } = action.payload
+export const authStore = writable({
+    user: null,
+    isAuthenticated: false,
+    loading: true
+});
 
-      return {
-        ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
-      };
-    default:
-      throw Error('Unknown action.');
-  }    
-}
+
+export const initializeAuth = () => {
+    const token = sessionStorage.getItem('token');
+    const userStr = sessionStorage.getItem('user');
+    
+    if (token && userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            authStore.set({
+                user: user,
+                isAuthenticated: true,
+                loading: false
+            });
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            // Limpiar datos corruptos
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            authStore.set({
+                user: null,
+                isAuthenticated: false,
+                loading: false
+            });
+        }
+    } else {
+        authStore.set({
+            user: null,
+            isAuthenticated: false,
+            loading: false
+        });
+    }
+};
+
+
+export const login = (user, token) => {
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('user', JSON.stringify(user));
+    authStore.set({
+        user: user,
+        isAuthenticated: true,
+        loading: false
+    });
+};
+
+
+export const logout = () => {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    authStore.set({
+        user: null,
+        isAuthenticated: false,
+        loading: false
+    });
+};

@@ -1,47 +1,26 @@
-from flask import request, jsonify, Blueprint
-from api.models import db, User
-from flask_cors import CORS
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
-api = Blueprint('api', __name__)
-CORS(api)
+db = SQLAlchemy()
 
-@api.route('/users', methods=['GET'])
-def get_users():
-    users = User.query.all()
-    return jsonify([user.serialize() for user in users]), 200
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
 
-@api.route('/register', methods=['POST'])
-def register_user():
-    data = request.get_json()
-    if 'email' not in data or 'password' not in data:
-        return jsonify({"msg": "Email y contraseña son requeridos"}), 400
-    
-    if User.query.filter_by(email=data['email']).first():
-        return jsonify({"msg": "Usuario ya existe"}), 400
-    
-    new_user = User(email=data['email'], password=data['password'], is_active=True)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify(new_user.serialize()), 201
+    def __repr__(self):
+        return f'<User {self.email}>'
 
-@api.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    user = User.query.filter_by(email=data['email'], password=data['password']).first()
-    
-    if user is None:
-        return jsonify({"msg": "Email o contraseña incorrectos"}), 400
-    
-    token_user = create_access_token(identity=str(user.id))
-    return jsonify({"token": token_user}), 200
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-@api.route("/protected", methods=['GET'])  
-@jwt_required()
-def protected():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    
-    if user:
-        return jsonify({"user_id": user.id, "email": user.email}), 200 
-    return jsonify({"msg": "Usuario no encontrado"}), 404
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "is_active": self.is_active
+        }

@@ -3,7 +3,7 @@ from api.models import db, User
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-api = Blueprint('api', __name__)  
+api = Blueprint('api', __name__)
 CORS(api)
 
 @api.route('/users', methods=['GET'])
@@ -19,16 +19,11 @@ def register_user():
         if not data or 'email' not in data or 'password' not in data:
             return jsonify({"msg": "Email y contraseña son requeridos"}), 400
         
-        
         if User.query.filter_by(email=data['email']).first():
             return jsonify({"msg": "Usuario ya existe"}), 400
         
-        
-        new_user = User(
-            email=data['email'], 
-            is_active=True
-        )
-        new_user.set_password(data['password']) 
+        new_user = User(email=data['email'], is_active=True)
+        new_user.set_password(data['password'])
         
         db.session.add(new_user)
         db.session.commit()
@@ -51,7 +46,6 @@ def login():
             return jsonify({"msg": "Email y contraseña son requeridos"}), 400
         
         user = User.query.filter_by(email=data['email']).first()
-        
         
         if user and user.check_password(data['password']):
             token_user = create_access_token(identity=str(user.id))
@@ -83,15 +77,3 @@ def protected():
         
     except Exception as e:
         return jsonify({"msg": "Error de autenticación"}), 401
-
-@api.route('/check-auth', methods=['GET'])
-@jwt_required()
-def check_auth():
-    """Endpoint para verificar si el token es válido"""
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    
-    if user:
-        return jsonify({"authenticated": True, "user": user.serialize()}), 200
-    
-    return jsonify({"authenticated": False}), 401

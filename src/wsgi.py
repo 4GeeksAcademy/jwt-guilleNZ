@@ -1,7 +1,14 @@
-# This file was created to run the application on heroku using gunicorn.
-# Read more about it here: https://devcenter.heroku.com/articles/python-gunicorn
+#!/usr/bin/env python3
+"""
+WSGI entry point for JWT Authentication App
+"""
+import os
+import sys
 
-from app import app as application
+# Add the src directory to the Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from app import app
 
 if __name__ == "__main__":
-    application.run()
+    app.run(host='0.0.0.0', port=5000, debug=True)

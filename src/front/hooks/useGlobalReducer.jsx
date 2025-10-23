@@ -1,24 +1,105 @@
-// Import necessary hooks and functions from React.
-import { useContext, useReducer, createContext } from "react";
-import storeReducer, { initialStore } from "../store"  // Import the reducer and the initial state.
+import { useReducer, useEffect } from "react";
 
-// Create a context to hold the global state of the application
-// We will call this global state the "store" to avoid confusion while using local states
-const StoreContext = createContext()
 
-// Define a provider component that encapsulates the store and warps it in a context provider to 
-// broadcast the information throught all the app pages and components.
-export function StoreProvider({ children }) {
-    // Initialize reducer with the initial state.
-    const [store, dispatch] = useReducer(storeReducer, initialStore())
-    // Provide the store and dispatch method to all child components.
-    return <StoreContext.Provider value={{ store, dispatch }}>
-        {children}
-    </StoreContext.Provider>
-}
+const initialState = {
+    user: null,
+    isAuthenticated: false,
+    loading: true,
+    backendStatus: "checking"
+};
 
-// Custom hook to access the global state and dispatch function.
-export default function useGlobalReducer() {
-    const { dispatch, store } = useContext(StoreContext)
-    return { dispatch, store };
-}
+
+export const actions = {
+    SET_USER: "SET_USER",
+    LOGOUT: "LOGOUT",
+    SET_LOADING: "SET_LOADING",
+    SET_BACKEND_STATUS: "SET_BACKEND_STATUS"
+};
+
+// Reducer
+const globalReducer = (state, action) => {
+    switch (action.type) {
+        case actions.SET_USER:
+            return {
+                ...state,
+                user: action.payload,
+                isAuthenticated: true,
+                loading: false
+            };
+        case actions.LOGOUT:
+            return {
+                ...state,
+                user: null,
+                isAuthenticated: false,
+                loading: false
+            };
+        case actions.SET_LOADING:
+            return {
+                ...state,
+                loading: action.payload
+            };
+        case actions.SET_BACKEND_STATUS:
+            return {
+                ...state,
+                backendStatus: action.payload
+            };
+        default:
+            return state;
+    }
+};
+
+
+const useGlobalReducer = () => {
+    const [state, dispatch] = useReducer(globalReducer, initialState);
+
+
+    useEffect(() => {
+        const checkAuth = () => {
+            const token = sessionStorage.getItem("token");
+            const userStr = sessionStorage.getItem("user");
+            
+            if (token && userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    dispatch({ type: actions.SET_USER, payload: user });
+                } catch (error) {
+                    console.error("Error parsing user data:", error);
+                    sessionStorage.removeItem("token");
+                    sessionStorage.removeItem("user");
+                }
+            } else {
+                dispatch({ type: actions.SET_LOADING, payload: false });
+            }
+        };
+
+        checkAuth();
+    }, []);
+
+    // Acciones
+    const login = (user, token) => {
+        sessionStorage.setItem("token", token);
+        sessionStorage.setItem("user", JSON.stringify(user));
+        dispatch({ type: actions.SET_USER, payload: user });
+    };
+
+    const logout = () => {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        dispatch({ type: actions.LOGOUT });
+    };
+
+    const setBackendStatus = (status) => {
+        dispatch({ type: actions.SET_BACKEND_STATUS, payload: status });
+    };
+
+    return {
+        state,
+        actions: {
+            login,
+            logout,
+            setBackendStatus
+        }
+    };
+};
+
+export default useGlobalReducer;

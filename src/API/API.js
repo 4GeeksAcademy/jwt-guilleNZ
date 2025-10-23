@@ -47,10 +47,12 @@ export const loginUser = async (credentials, navigate) => {
             navigate("/private");
             return { success: true, user: data.user };
         } else {
+            alert(data.msg || "Error en el login");
             return { success: false, error: data.msg || "Error en el login" };
         }
     } catch (error) {
         console.error("Login Error", error);
+        alert("Error de conexión");
         return { success: false, error: "Error de conexión" };
     }
 };
@@ -60,7 +62,7 @@ export const protectedRoute = async () => {
         const token = sessionStorage.getItem("token");
         
         if (!token) {
-            return { authenticated: false };
+            return false;
         }
         
         const response = await fetch(`${backendURL}/protected`, {
@@ -71,28 +73,14 @@ export const protectedRoute = async () => {
             }
         });
         
-        if (response.ok) {
-            const data = await response.json();
-            return { authenticated: true, user: data };
-        } else {
-            
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("user");
-            return { authenticated: false };
-        }
+        return response.ok;
     } catch (error) {
         console.error("Error de acceso a la ruta protegida", error);
-        return { authenticated: false };
+        return false;
     }
 };
 
-export const logoutUser = (navigate) => {
+export const logoutUser = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
-    navigate("/login");
-};
-
-export const getCurrentUser = () => {
-    const userStr = sessionStorage.getItem("user");
-    return userStr ? JSON.parse(userStr) : null;
 };
