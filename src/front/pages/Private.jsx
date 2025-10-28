@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { protectedRoute, logoutUser } from "../API/API";
+import { protectedRoute, logoutUser } from "../../API/API.js";
 
 const Private = () => {
     const [loading, setLoading] = useState(true);
@@ -26,8 +26,7 @@ const Private = () => {
     }, [navigate]);
 
     const handleLogout = () => {
-        logoutUser();
-        navigate("/login");
+        logoutUser(navigate);
     };
 
     if (loading) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { newUser } from "../API/API";
+import { newUser } from "../../API/API.js";
 
 const CreateUser = () => {
     const [email, setEmail] = useState("");
